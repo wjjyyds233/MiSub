@@ -1,0 +1,1 @@
+function t(t,o=2){if(!+t||t<0)return"0 B";const a=o<0?0:o,n=["B","KB","MB","GB","TB","PB"],r=Math.min(Math.floor(Math.log(t)/Math.log(1024)),n.length-1);return`${parseFloat((t/Math.pow(1024,r)).toFixed(a))} ${n[r]}`}export{t as f};
