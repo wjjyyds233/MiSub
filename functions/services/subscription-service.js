@@ -927,7 +927,8 @@ export async function generateCombinedNodeList(
     const processedSubContents = await Promise.all(subPromises);
 
     // --- 阶段 1: 原始数据汇聚 (Raw Data Aggregation) ---
-    const rawCombinedLines = (processedManualNodeList + '\n' + processedSubContents.join('\n'))
+    // 机场订阅优先，手动节点追加到末尾，便于客户端按来源查看。
+    const rawCombinedLines = (processedSubContents.join('\n') + '\n' + processedManualNodeList)
         .split('\n')
         .map((line) => line.trim())
         .filter(Boolean);
