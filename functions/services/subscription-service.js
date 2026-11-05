@@ -24,9 +24,9 @@ import { isSuspiciousNodeCountDrop } from './node-cache-service.js';
  * 订阅获取配置常量
  */
 const FETCH_CONFIG = {
-    TIMEOUT: 18000, // 单次请求超时 18 秒
-    MAX_RETRIES: 2, // 最多重试 2 次
-    BASE_DELAY: 1000, // 重试基础延迟 1 秒
+    TIMEOUT: 12000, // 单次请求超时 12 秒，避免慢源拖住整个组合订阅
+    MAX_RETRIES: 1, // 最多重试 1 次，控制最坏等待时间
+    BASE_DELAY: 500, // 重试基础延迟 0.5 秒
     CONCURRENCY: 4, // 最大并发数
     RETRYABLE_STATUS: [500, 502, 503, 504, 429], // 可重试的 HTTP 状态码
 };

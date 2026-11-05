@@ -4,8 +4,9 @@
  */
 
 const DEFAULT_RETRY_OPTIONS = {
-    MAX_RETRIES: 2, // 最多重试 2 次
-    BASE_DELAY: 1000, // 重试基础延迟 1 秒
+    MAX_RETRIES: 1, // 最多重试 1 次
+    BASE_DELAY: 500, // 重试基础延迟 0.5 秒
+    TIMEOUT: 12000, // 单次上游请求最多等待 12 秒
     RETRYABLE_STATUS: [500, 502, 503, 504, 429], // 可重试的 HTTP 状态码
 };
 
@@ -21,13 +22,21 @@ export async function fetchWithRetry(url, init = {}, options = {}) {
         maxRetries = DEFAULT_RETRY_OPTIONS.MAX_RETRIES,
         baseDelay = DEFAULT_RETRY_OPTIONS.BASE_DELAY,
         retryableStatus = DEFAULT_RETRY_OPTIONS.RETRYABLE_STATUS,
+        timeout = DEFAULT_RETRY_OPTIONS.TIMEOUT,
     } = options;
 
     let lastError;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        let timeoutId;
         try {
-            const response = await fetch(url, init);
+            const requestInit = { ...init };
+            if (!requestInit.signal && Number.isFinite(timeout) && timeout > 0) {
+                const controller = new AbortController();
+                timeoutId = setTimeout(() => controller.abort(), timeout);
+                requestInit.signal = controller.signal;
+            }
+            const response = await fetch(url, requestInit);
 
             if (response.ok) {
                 return response;
@@ -57,6 +66,8 @@ export async function fetchWithRetry(url, init = {}, options = {}) {
                 `[Fetch Retry] Attempt ${attempt + 1}/${maxRetries} failed for ${url}: ${error.message}. Retrying in ${delay / 1000}s...`
             );
             await new Promise((resolve) => setTimeout(resolve, delay));
+        } finally {
+            if (timeoutId) clearTimeout(timeoutId);
         }
     }
 
